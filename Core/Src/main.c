@@ -44,6 +44,8 @@
 
 /* USER CODE BEGIN PV */
 
+uint8_t lastCLKState;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -89,6 +91,8 @@ int main(void)
   MX_GPIO_Init();
   /* USER CODE BEGIN 2 */
 
+  lastCLKState = HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_10);
+
   /* USER CODE END 2 */
 
   /* Initialize leds */
@@ -96,14 +100,50 @@ int main(void)
 
   /* Initialize USER push-button, will be used to trigger an interrupt each time it's pressed.*/
   BSP_PB_Init(BUTTON_USER, BUTTON_MODE_EXTI);
-
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  while (1) //LED trigger demo
+  while (1)
   {
+    uint8_t currentCLKState =
+        HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_10);
 
-	  BSP_LED_Toggle(LED2);
-	  HAL_Delay(500);
+    /* Detect encoder rotation */
+    if (currentCLKState != lastCLKState)
+    {
+      if (currentCLKState == GPIO_PIN_RESET)
+      {
+        if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_3) != currentCLKState)
+        {
+          /* Clockwise */
+          BSP_LED_Toggle(LED2);
+        }
+        else
+        {
+          /* Counter-clockwise */
+          BSP_LED_Toggle(LED2);
+        }
+      }
+
+      lastCLKState = currentCLKState;
+    }
+
+    /* Detect encoder button press */
+    if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_5) == GPIO_PIN_RESET)
+    {
+      HAL_Delay(20);
+
+      if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_5) == GPIO_PIN_RESET)
+      {
+        BSP_LED_Toggle(LED2);
+
+        while (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_5) == GPIO_PIN_RESET)
+        {
+          /* Wait for release */
+        }
+
+        HAL_Delay(20);
+      }
+    }
 
     /* USER CODE END WHILE */
 
@@ -111,7 +151,6 @@ int main(void)
   }
   /* USER CODE END 3 */
 }
-
 /**
   * @brief System Clock Configuration
   * @retval None
@@ -184,6 +223,18 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
   GPIO_InitStruct.Alternate = GPIO_AF7_USART2;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : PA10 */
+  GPIO_InitStruct.Pin = GPIO_PIN_10;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : PB3 PB5 */
+  GPIO_InitStruct.Pin = GPIO_PIN_3|GPIO_PIN_5;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
   /* USER CODE BEGIN MX_GPIO_Init_2 */
 
