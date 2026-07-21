@@ -7,3 +7,17 @@
 ../Drivers/BSP/STM32F4xx-Nucleo/stm32f4xx_nucleo.c:250:6:BSP_PB_Init	40	static
 ../Drivers/BSP/STM32F4xx-Nucleo/stm32f4xx_nucleo.c:287:6:BSP_PB_DeInit	40	static
 ../Drivers/BSP/STM32F4xx-Nucleo/stm32f4xx_nucleo.c:302:10:BSP_PB_GetState	16	static
+../Drivers/BSP/STM32F4xx-Nucleo/stm32f4xx_nucleo.c:318:13:SPIx_MspInit	48	static
+../Drivers/BSP/STM32F4xx-Nucleo/stm32f4xx_nucleo.c:353:13:SPIx_Init	8	static
+../Drivers/BSP/STM32F4xx-Nucleo/stm32f4xx_nucleo.c:390:13:SPIx_WriteReadData	40	static
+../Drivers/BSP/STM32F4xx-Nucleo/stm32f4xx_nucleo.c:408:13:SPIx_Write	32	static
+../Drivers/BSP/STM32F4xx-Nucleo/stm32f4xx_nucleo.c:426:13:SPIx_Error	8	static
+../Drivers/BSP/STM32F4xx-Nucleo/stm32f4xx_nucleo.c:444:6:SD_IO_Init	40	static
+../Drivers/BSP/STM32F4xx-Nucleo/stm32f4xx_nucleo.c:479:6:SD_IO_CSState	16	static
+../Drivers/BSP/STM32F4xx-Nucleo/stm32f4xx_nucleo.c:497:6:SD_IO_WriteReadData	24	static
+../Drivers/BSP/STM32F4xx-Nucleo/stm32f4xx_nucleo.c:507:9:SD_IO_WriteByte	24	static
+../Drivers/BSP/STM32F4xx-Nucleo/stm32f4xx_nucleo.c:519:6:LCD_IO_Init	40	static
+../Drivers/BSP/STM32F4xx-Nucleo/stm32f4xx_nucleo.c:549:6:LCD_IO_WriteReg	16	static
+../Drivers/BSP/STM32F4xx-Nucleo/stm32f4xx_nucleo.c:569:6:LCD_IO_WriteData	16	static
+../Drivers/BSP/STM32F4xx-Nucleo/stm32f4xx_nucleo.c:589:6:LCD_IO_WriteMultipleData	24	static
+../Drivers/BSP/STM32F4xx-Nucleo/stm32f4xx_nucleo.c:644:6:LCD_Delay	16	static
