@@ -1,0 +1,9 @@
+../Core/Src/ili9341.c:9:13:ILI9341_Select	1
+../Core/Src/ili9341.c:14:13:ILI9341_Unselect	1
+../Core/Src/ili9341.c:19:13:ILI9341_Reset	1
+../Core/Src/ili9341.c:28:13:ILI9341_WriteCommand	2
+../Core/Src/ili9341.c:41:13:ILI9341_WriteData	2
+../Core/Src/ili9341.c:53:13:ILI9341_WriteByte	1
+../Core/Src/ili9341.c:58:13:ILI9341_SetAddressWindow	1
+../Core/Src/ili9341.c:90:6:ILI9341_Init	1
+../Core/Src/ili9341.c:226:6:ILI9341_FillScreen	2

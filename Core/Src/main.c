@@ -21,7 +21,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "ili9341.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -45,6 +45,9 @@
 SPI_HandleTypeDef hspi1;
 
 /* USER CODE BEGIN PV */
+
+volatile uint32_t tft_debug_step = 0;
+volatile HAL_StatusTypeDef tft_spi_status = HAL_OK;
 
 uint8_t lastCLKState;
 
@@ -97,6 +100,13 @@ int main(void)
 
   lastCLKState = HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_10);
 
+  tft_debug_step = 1;
+  ILI9341_Init();
+  tft_debug_step = 2;
+  ILI9341_FillScreen(ILI9341_RED);
+  tft_debug_step = 3;
+
+
   /* USER CODE END 2 */
 
   /* Initialize USER push-button, will be used to trigger an interrupt each time it's pressed.*/
@@ -104,53 +114,55 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+
+
   while (1)
-  {
-    uint8_t currentCLKState =
-        HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_10);
+   {
+     uint8_t currentCLKState =
+         HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_10);
 
-    /* Detect encoder rotation */
-    if (currentCLKState != lastCLKState)
-    {
-      if (currentCLKState == GPIO_PIN_RESET)
-      {
-        if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_3) != currentCLKState)
-        {
-          /* Clockwise */
-          BSP_LED_Toggle(LED2);
-        }
-        else
-        {
-          /* Counter-clockwise */
-          BSP_LED_Toggle(LED2);
-        }
-      }
+     /* Detect encoder rotation */
+     if (currentCLKState != lastCLKState)
+     {
+       if (currentCLKState == GPIO_PIN_RESET)
+       {
+         if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_3) != currentCLKState)
+         {
+           /* Clockwise */
+           BSP_LED_Toggle(LED2);
+         }
+         else
+         {
+           /* Counter-clockwise */
+           BSP_LED_Toggle(LED2);
+         }
+       }
 
-      lastCLKState = currentCLKState;
-    }
+       lastCLKState = currentCLKState;
+     }
 
-    /* Detect encoder button press */
-    if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_5) == GPIO_PIN_RESET)
-    {
-      HAL_Delay(20);
+     /* Detect encoder button press */
+     if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_5) == GPIO_PIN_RESET)
+     {
+       HAL_Delay(20);
 
-      if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_5) == GPIO_PIN_RESET)
-      {
-        BSP_LED_Toggle(LED2);
+       if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_5) == GPIO_PIN_RESET)
+       {
+         BSP_LED_Toggle(LED2);
 
-        while (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_5) == GPIO_PIN_RESET)
-        {
-          /* Wait for release */
-        }
+         while (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_5) == GPIO_PIN_RESET)
+         {
+           /* Wait for release */
+         }
 
-        HAL_Delay(20);
-      }
-    }
-
+         HAL_Delay(20);
+       }
+     }
+   }
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-  }
+
   /* USER CODE END 3 */
 }
 
@@ -224,7 +236,7 @@ static void MX_SPI1_Init(void)
   hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
   hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
   hspi1.Init.NSS = SPI_NSS_SOFT;
-  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
+  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16;
   hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
   hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
