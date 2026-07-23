@@ -5,6 +5,7 @@
 
 void ILI9341_Init(void);
 void ILI9341_FillScreen(uint16_t color);
+void ILI9341_DrawImageUpscaled2x(const uint16_t *data, uint16_t srcW, uint16_t srcH);
 
 #define ILI9341_BLACK   0x0000
 #define ILI9341_WHITE   0xFFFF

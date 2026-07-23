@@ -240,3 +240,30 @@ void ILI9341_FillScreen(uint16_t color)
 
     ILI9341_Unselect();
 }
+
+void ILI9341_DrawImageUpscaled2x(const uint16_t *data, uint16_t srcW, uint16_t srcH)
+{
+    uint16_t lineBuf[240];  // one full destination row (240 wide)
+
+    ILI9341_Select();
+    ILI9341_SetAddressWindow(0, 0, (srcW * 2) - 1, (srcH * 2) - 1);
+    HAL_GPIO_WritePin(TFT_DC_GPIO_Port, TFT_DC_Pin, GPIO_PIN_SET);
+
+    for (uint16_t y = 0; y < srcH; y++)
+    {
+        const uint16_t *srcRow = &data[y * srcW];
+
+        /* Build one upscaled row: each source pixel repeated twice horizontally */
+        for (uint16_t x = 0; x < srcW; x++)
+        {
+            lineBuf[x * 2]     = srcRow[x];
+            lineBuf[x * 2 + 1] = srcRow[x];
+        }
+
+        /* Send this row twice to double it vertically too */
+        HAL_SPI_Transmit(&hspi1, (uint8_t *)lineBuf, sizeof(lineBuf), HAL_MAX_DELAY);
+        HAL_SPI_Transmit(&hspi1, (uint8_t *)lineBuf, sizeof(lineBuf), HAL_MAX_DELAY);
+    }
+
+    ILI9341_Unselect();
+}
