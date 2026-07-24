@@ -2,7 +2,7 @@
 #define SUNSET_IMG_H_
 
 #include <stdint.h>
-
+//sunset image whose pixels will get 2x using Draw function
 #define sunset_img_WIDTH  120
 #define sunset_img_HEIGHT 160
 
