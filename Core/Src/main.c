@@ -50,7 +50,7 @@ typedef struct
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 
-#define MENU_START_Y   60
+#define MENU_START_Y   60 //Names constants for layout
 #define MENU_ROW_H     28
 #define MENU_ARROW_X   16
 #define MENU_LABEL_X   40
