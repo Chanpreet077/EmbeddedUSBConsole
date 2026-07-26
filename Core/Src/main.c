@@ -38,7 +38,7 @@ typedef enum
     SCREEN_ABOUT
 } AppScreen_t;
 
-/* One row in the menu: what it says, and what screen selecting it goes to. */
+/* One row in the menu: the title(unchangeable) + what bg screen it goes to */
 typedef struct
 {
     const char *label;
