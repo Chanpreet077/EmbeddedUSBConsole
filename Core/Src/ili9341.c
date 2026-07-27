@@ -265,9 +265,9 @@ void ILI9341_DrawImageUpscaled2x(const uint16_t *data, uint16_t srcW, uint16_t s
              * little-endian memory layout come out in the right order
              * when we transmit the buffer as raw bytes below. */
             uint16_t pixel = srcRow[x];
-            uint16_t swapped = (uint16_t)((pixel >> 8) | (pixel << 8));
+            uint16_t swapped = (uint16_t)((pixel >> 8) | (pixel << 8)); //swap for TFT to get expected order
 
-            lineBuf[x * 2]     = swapped;
+            lineBuf[x * 2]     = swapped; //sent it over twice, for 2x purposes
             lineBuf[x * 2 + 1] = swapped;
         }
 
