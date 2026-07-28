@@ -23,6 +23,7 @@
 /* USER CODE BEGIN Includes */
 #include "ili9341.h"
 #include "sunset_img.h"
+#include <string.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -151,6 +152,62 @@ static void RenderPlaceholderScreen(const char *title)
     ILI9341_DrawString(20, 75, "TO GO BACK", ILI9341_GRAY, ILI9341_BLACK, 1);
 }
 
+
+/* Draws `text`, automatically breaking it into multiple lines so it
+ * never runs off the right edge of the screen. Breaks at the last
+ * space before the line limit, so it doesn't cut words in half. */
+static void DrawWrappedText(uint16_t x, uint16_t y, uint16_t lineHeight,
+                             const char *text, uint16_t fgColor, uint16_t bgColor,
+                             uint8_t scale, uint8_t maxCharsPerLine)
+{
+    char lineBuf[40];
+    uint16_t curY = y;
+    const char *p = text;
+
+    while (*p)
+    {
+        const char *scan = p;
+        const char *lastSpace = NULL;
+        uint8_t lineLen = 0;
+
+        while (*scan && lineLen < maxCharsPerLine)
+        {
+            if (*scan == ' ') lastSpace = scan;
+            scan++;
+            lineLen++;
+        }
+
+        const char *lineEnd;
+        if (*scan == '\0')       lineEnd = scan;
+        else if (lastSpace)      lineEnd = lastSpace;
+        else                     lineEnd = scan;
+
+        uint8_t copyLen = (uint8_t)(lineEnd - p);
+        if (copyLen > sizeof(lineBuf) - 1) copyLen = sizeof(lineBuf) - 1;
+        memcpy(lineBuf, p, copyLen);
+        lineBuf[copyLen] = '\0';
+
+        ILI9341_DrawString(x, curY, lineBuf, fgColor, bgColor, scale);
+        curY += lineHeight;
+
+        p = (*lineEnd == ' ') ? lineEnd + 1 : lineEnd;
+    }
+}
+
+static void RenderAboutScreen(void)
+{
+    ILI9341_FillScreen(ILI9341_BLACK);
+    ILI9341_DrawString(20, 20, "ABOUT", ILI9341_YELLOW, ILI9341_BLACK, 2);
+
+    DrawWrappedText(10, 55, 12,
+        "This project is an Embedded USB console, it allows you to "
+        "control your applications, see your computers data, and "
+        "get environment data. Hope you like it!",
+        ILI9341_WHITE, ILI9341_BLACK, 1, 27);
+
+    ILI9341_DrawString(10, 290, "PRESS USER BTN TO GO BACK", ILI9341_GRAY, ILI9341_BLACK, 1);
+}
+
 /* Called once per loop iteration. Decides whether anything actually
  * needs to be drawn this pass, and if so, draws the minimum necessary
  * -- a full redraw on screen change, or just the arrow on cursor move. */
@@ -160,6 +217,10 @@ static void RenderCurrentScreen(void)
     {
         switch (currentScreen)
         {
+
+        case SCREEN_MENU:
+            RenderMenuScreen();
+            break;
         case SCREEN_APPLICATIONS:
         	RenderPlaceholderScreen("APPLICATIONS");
         	break;
@@ -170,7 +231,7 @@ static void RenderCurrentScreen(void)
         	RenderPlaceholderScreen("COMPUTER");
         	break;
         case SCREEN_ABOUT:
-            RenderPlaceholderScreen("ABOUT");
+            RenderAboutScreen();
             break;
         }
         needsFullRedraw = 0;
