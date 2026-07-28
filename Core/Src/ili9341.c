@@ -228,7 +228,7 @@ void ILI9341_Init(void)
 void ILI9341_FillScreen(uint16_t color)
 {
     uint8_t colorData[2];
-    colorData[0] = (uint8_t)(color >> 8);
+    colorData[0] = (uint8_t)(color >> 8); //we have to split colours always bc colours are 16bit but STM32 needs 8 bit so we split into 2 bytes
     colorData[1] = (uint8_t)(color & 0xFF);
 
     ILI9341_Select();
