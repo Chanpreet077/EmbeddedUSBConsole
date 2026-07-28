@@ -33,9 +33,10 @@
 typedef enum
 {
     SCREEN_MENU,
-    SCREEN_DASHBOARD,
-    SCREEN_SETTINGS,
-    SCREEN_ABOUT
+    SCREEN_APPLICATIONS,
+    SCREEN_ENVIRONMENT,
+    SCREEN_COMPUTER,
+	SCREEN_ABOUT
 } AppScreen_t;
 
 /* One row in the menu: the title(unchangeable) + what bg screen it goes to */
@@ -77,8 +78,9 @@ uint8_t lastCLKState;
 
 static const MenuItem_t menuItems[] =
 {
-    { "DASHBOARD", SCREEN_DASHBOARD },
-    { "SETTINGS",  SCREEN_SETTINGS  },
+	{ "APPLICATIONS", SCREEN_APPLICATIONS },
+	{ "ENVIRONMENT",  SCREEN_ENVIRONMENT  },
+	{ "COMPUTER",     SCREEN_COMPUTER     },
     { "ABOUT",     SCREEN_ABOUT     },
 };
 #define MENU_ITEM_COUNT (sizeof(menuItems) / sizeof(menuItems[0]))
@@ -158,18 +160,18 @@ static void RenderCurrentScreen(void)
     {
         switch (currentScreen)
         {
-            case SCREEN_MENU:
-                RenderMenuScreen();
-                break;
-            case SCREEN_DASHBOARD:
-                RenderPlaceholderScreen("DASHBOARD");
-                break;
-            case SCREEN_SETTINGS:
-                RenderPlaceholderScreen("SETTINGS");
-                break;
-            case SCREEN_ABOUT:
-                RenderPlaceholderScreen("ABOUT");
-                break;
+        case SCREEN_APPLICATIONS:
+        	RenderPlaceholderScreen("APPLICATIONS");
+        	break;
+        case SCREEN_ENVIRONMENT:
+        	RenderPlaceholderScreen("ENVIRONMENT");
+        	break;
+        case SCREEN_COMPUTER:
+        	RenderPlaceholderScreen("COMPUTER");
+        	break;
+        case SCREEN_ABOUT:
+            RenderPlaceholderScreen("ABOUT");
+            break;
         }
         needsFullRedraw = 0;
         menuCursorMoved = 0;
