@@ -218,7 +218,7 @@ static void RenderCurrentScreen(void)
         switch (currentScreen)
         {
 
-        case SCREEN_MENU:
+        case SCREEN_MENU: //Updated Menu
             RenderMenuScreen();
             break;
         case SCREEN_APPLICATIONS:
