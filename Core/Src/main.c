@@ -24,6 +24,8 @@
 #include "ili9341.h"
 #include "sunset_img.h"
 #include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -70,6 +72,8 @@ typedef struct
 
 SPI_HandleTypeDef hspi1;
 
+UART_HandleTypeDef huart2;
+
 /* USER CODE BEGIN PV */
 
 volatile uint32_t tft_debug_step = 0;
@@ -92,18 +96,40 @@ static volatile uint8_t menuCursorMoved = 0;   /* only the cursor moved    */
 static uint8_t menuCursor = 0;
 static uint8_t previousMenuCursor = 0;
 
+
+#define UART_LINE_MAX 32 //UART Computer globals
+
+uint8_t uartRxByte;
+char uartLineBuf[UART_LINE_MAX];
+uint8_t uartLineIdx = 0;
+
+volatile char uartLineComplete[UART_LINE_MAX];
+volatile uint8_t uartLineReady = 0;
+
+typedef struct
+{
+    int cpu;
+    int ram;
+} ComputerStats_t;
+
+volatile ComputerStats_t computerStats = { 0, 0 };
+volatile uint8_t computerNeedsUpdate = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_SPI1_Init(void);
+static void MX_USART2_UART_Init(void);
 /* USER CODE BEGIN PFP */
 
 static void DrawMenuArrow(uint8_t index, uint8_t show);
 static void RenderMenuScreen(void);
 static void RenderPlaceholderScreen(const char *title);
 static void RenderCurrentScreen(void);
+static void RenderComputerScreen(void);
+static void UpdateComputerValues(void);
+static void ParseUartLine(const char *line);
 
 /* USER CODE END PFP */
 
@@ -228,7 +254,7 @@ static void RenderCurrentScreen(void)
         	RenderPlaceholderScreen("ENVIRONMENT");
         	break;
         case SCREEN_COMPUTER:
-        	RenderPlaceholderScreen("COMPUTER");
+        	RenderComputerScreen();
         	break;
         case SCREEN_ABOUT:
             RenderAboutScreen();
@@ -244,6 +270,47 @@ static void RenderCurrentScreen(void)
         previousMenuCursor = menuCursor;
         menuCursorMoved = 0;
     }
+
+    else if (computerNeedsUpdate && currentScreen == SCREEN_COMPUTER)
+    {
+        UpdateComputerValues();
+        computerNeedsUpdate = 0;
+    }
+}
+
+
+static void ParseUartLine(const char *line)
+{
+    if (strncmp(line, "CPU:", 4) == 0)
+    {
+        computerStats.cpu = atoi(line + 4);
+        computerNeedsUpdate = 1;
+    }
+    else if (strncmp(line, "RAM:", 4) == 0)
+    {
+        computerStats.ram = atoi(line + 4);
+        computerNeedsUpdate = 1;
+    }
+}
+
+
+static void UpdateComputerValues(void)
+{
+    char buf[20];
+
+    snprintf(buf, sizeof(buf), "CPU: %3d%%", computerStats.cpu);
+    ILI9341_DrawString(20, 60, buf, ILI9341_WHITE, ILI9341_BLACK, 2);
+
+    snprintf(buf, sizeof(buf), "RAM: %3d%%", computerStats.ram);
+    ILI9341_DrawString(20, 90, buf, ILI9341_WHITE, ILI9341_BLACK, 2);
+}
+
+static void RenderComputerScreen(void)
+{
+    ILI9341_FillScreen(ILI9341_BLACK);
+    ILI9341_DrawString(20, 20, "COMPUTER", ILI9341_YELLOW, ILI9341_BLACK, 2);
+    UpdateComputerValues();
+    ILI9341_DrawString(10, 290, "PRESS USER BTN TO GO BACK", ILI9341_GRAY, ILI9341_BLACK, 1);
 }
 
 /* USER CODE END 0 */
@@ -278,9 +345,12 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_SPI1_Init();
+  MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
 
   lastCLKState = HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_10);
+
+  HAL_UART_Receive_IT(&huart2, &uartRxByte, 1);
 
   tft_debug_step = 1;
   ILI9341_Init();
@@ -352,6 +422,11 @@ int main(void)
       }
     }
 
+    if (uartLineReady)
+    {
+        ParseUartLine((const char *)uartLineComplete);
+        uartLineReady = 0;
+    }
     /* Draw whatever actually changed this pass, if anything did */
     RenderCurrentScreen();
 
@@ -359,6 +434,7 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
   }
+  /* USER CODE END 3 */
 }
 
 /**
@@ -447,6 +523,39 @@ static void MX_SPI1_Init(void)
 }
 
 /**
+  * @brief USART2 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_USART2_UART_Init(void)
+{
+
+  /* USER CODE BEGIN USART2_Init 0 */
+
+  /* USER CODE END USART2_Init 0 */
+
+  /* USER CODE BEGIN USART2_Init 1 */
+
+  /* USER CODE END USART2_Init 1 */
+  huart2.Instance = USART2;
+  huart2.Init.BaudRate = 115200;
+  huart2.Init.WordLength = UART_WORDLENGTH_8B;
+  huart2.Init.StopBits = UART_STOPBITS_1;
+  huart2.Init.Parity = UART_PARITY_NONE;
+  huart2.Init.Mode = UART_MODE_TX_RX;
+  huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart2.Init.OverSampling = UART_OVERSAMPLING_16;
+  if (HAL_UART_Init(&huart2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN USART2_Init 2 */
+
+  /* USER CODE END USART2_Init 2 */
+
+}
+
+/**
   * @brief GPIO Initialization Function
   * @param None
   * @retval None
@@ -472,14 +581,6 @@ static void MX_GPIO_Init(void)
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(TFT_CS_GPIO_Port, TFT_CS_Pin, GPIO_PIN_SET);
-
-  /*Configure GPIO pins : USART_TX_Pin USART_RX_Pin */
-  GPIO_InitStruct.Pin = USART_TX_Pin|USART_RX_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
-  GPIO_InitStruct.Alternate = GPIO_AF7_USART2;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
   /*Configure GPIO pin : TFT_DC_Pin */
   GPIO_InitStruct.Pin = TFT_DC_Pin;
@@ -536,6 +637,26 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
       needsFullRedraw = 1;
     }
   }
+}
+
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+    if (huart->Instance == USART2)
+    {
+        if (uartRxByte == '\n')
+        {
+            uartLineBuf[uartLineIdx] = '\0';
+            strncpy((char *)uartLineComplete, uartLineBuf, UART_LINE_MAX);
+            uartLineReady = 1;
+            uartLineIdx = 0;
+        }
+        else if (uartRxByte != '\r' && uartLineIdx < UART_LINE_MAX - 1)
+        {
+            uartLineBuf[uartLineIdx++] = uartRxByte;
+        }
+
+        HAL_UART_Receive_IT(&huart2, &uartRxByte, 1);
+    }
 }
 
 /* USER CODE END 4 */

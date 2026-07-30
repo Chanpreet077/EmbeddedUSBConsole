@@ -25,6 +25,7 @@ Core/Src/ili9341.o: ../Core/Src/ili9341.c ../Core/Inc/ili9341.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pwr.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pwr_ex.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_spi.h \
+ ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h \
  ../Drivers/BSP/STM32F4xx-Nucleo/stm32f4xx_nucleo.h ../Core/Inc/font8x8.h
 ../Core/Inc/ili9341.h:
 ../Core/Inc/main.h:
@@ -54,5 +55,6 @@ Core/Src/ili9341.o: ../Core/Src/ili9341.c ../Core/Inc/ili9341.h \
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pwr.h:
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pwr_ex.h:
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_spi.h:
+../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h:
 ../Drivers/BSP/STM32F4xx-Nucleo/stm32f4xx_nucleo.h:
 ../Core/Inc/font8x8.h:
