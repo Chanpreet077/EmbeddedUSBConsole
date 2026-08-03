@@ -115,10 +115,10 @@ typedef struct
 volatile ComputerStats_t computerStats = { 0, 0 };
 volatile uint8_t computerNeedsUpdate = 0;
 
-typedef enum { APP_BUILD, APP_OPEN_CODE, APP_GIT_STATUS, APP_COUNT } AppChoice_t;
+typedef enum { APP_BUILD, APP_FLASH, APP_OPEN_CODE, APP_GIT_STATUS, APP_COUNT } AppChoice_t;
 
-static const char *appLabels[APP_COUNT] = { "BUILD", "OPEN CODE", "GIT STATUS" };
-static const char *appCommands[APP_COUNT] = { "ACTION:BUILD\n", "ACTION:OPEN_CODE\n", "ACTION:GIT_STATUS\n" };
+static const char *appLabels[APP_COUNT] = { "BUILD", "FLASH", "OPEN CODE", "GIT STATUS" };
+static const char *appCommands[APP_COUNT] = { "ACTION:BUILD\n", "ACTION:FLASH\n", "ACTION:OPEN_CODE\n", "ACTION:GIT_STATUS\n" };
 
 #define APPS_START_Y 60
 #define APPS_ROW_H   28
