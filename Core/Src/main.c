@@ -83,7 +83,7 @@ uint8_t lastCLKState;
 
 static const MenuItem_t menuItems[] =
 {
-	{ "APPLICATIONS", SCREEN_APPLICATIONS },
+	{ "DEV TOOLS", SCREEN_APPLICATIONS },
 	{ "ENVIRONMENT",  SCREEN_ENVIRONMENT  },
 	{ "COMPUTER",     SCREEN_COMPUTER     },
     { "ABOUT",     SCREEN_ABOUT     },
@@ -114,6 +114,23 @@ typedef struct
 
 volatile ComputerStats_t computerStats = { 0, 0 };
 volatile uint8_t computerNeedsUpdate = 0;
+
+typedef enum { APP_BUILD, APP_OPEN_CODE, APP_GIT_STATUS, APP_COUNT } AppChoice_t;
+
+static const char *appLabels[APP_COUNT] = { "BUILD", "OPEN CODE", "GIT STATUS" };
+static const char *appCommands[APP_COUNT] = { "ACTION:BUILD\n", "ACTION:OPEN_CODE\n", "ACTION:GIT_STATUS\n" };
+
+#define APPS_START_Y 60
+#define APPS_ROW_H   28
+#define APPS_ARROW_X 16
+#define APPS_LABEL_X 40
+
+uint8_t appsCursor = 0;
+uint8_t previousAppsCursor = 0;
+volatile uint8_t appsCursorMoved = 0;
+
+
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -130,6 +147,10 @@ static void RenderCurrentScreen(void);
 static void RenderComputerScreen(void);
 static void UpdateComputerValues(void);
 static void ParseUartLine(const char *line);
+
+static void DrawAppsArrow(uint8_t index, uint8_t show);
+static void RenderApplicationsScreen(void);
+static void SendUartCommand(const char *cmd);
 
 /* USER CODE END PFP */
 
@@ -234,6 +255,35 @@ static void RenderAboutScreen(void)
     ILI9341_DrawString(10, 290, "PRESS USER BTN TO GO BACK", ILI9341_GRAY, ILI9341_BLACK, 1);
 }
 
+static void SendUartCommand(const char *cmd)
+{
+    HAL_UART_Transmit(&huart2, (uint8_t *)cmd, strlen(cmd), HAL_MAX_DELAY);
+}
+
+static void DrawAppsArrow(uint8_t index, uint8_t show)
+{
+    uint16_t y = APPS_START_Y + (index * APPS_ROW_H);
+    char glyph = show ? '>' : ' ';
+    ILI9341_DrawChar(APPS_ARROW_X, y, glyph, ILI9341_YELLOW, ILI9341_BLACK, MENU_TEXT_SCALE);
+}
+
+static void RenderApplicationsScreen(void)
+{
+    ILI9341_FillScreen(ILI9341_BLACK);
+    ILI9341_DrawString(20, 20, "DEV TOOLS", ILI9341_YELLOW, ILI9341_BLACK, 2);
+
+    for (uint8_t i = 0; i < APP_COUNT; i++)
+    {
+        uint16_t y = APPS_START_Y + (i * APPS_ROW_H);
+        ILI9341_DrawString(APPS_LABEL_X, y, appLabels[i], ILI9341_WHITE, ILI9341_BLACK, MENU_TEXT_SCALE);
+    }
+
+    DrawAppsArrow(appsCursor, 1);
+    previousAppsCursor = appsCursor;
+
+    ILI9341_DrawString(10, 290, "PRESS USER BTN TO GO BACK", ILI9341_GRAY, ILI9341_BLACK, 1);
+}
+
 /* Called once per loop iteration. Decides whether anything actually
  * needs to be drawn this pass, and if so, draws the minimum necessary
  * -- a full redraw on screen change, or just the arrow on cursor move. */
@@ -248,8 +298,8 @@ static void RenderCurrentScreen(void)
             RenderMenuScreen();
             break;
         case SCREEN_APPLICATIONS:
-        	RenderPlaceholderScreen("APPLICATIONS");
-        	break;
+            RenderApplicationsScreen();
+            break;
         case SCREEN_ENVIRONMENT:
         	RenderPlaceholderScreen("ENVIRONMENT");
         	break;
@@ -275,6 +325,15 @@ static void RenderCurrentScreen(void)
     {
         UpdateComputerValues();
         computerNeedsUpdate = 0;
+    }
+
+
+    else if (appsCursorMoved && currentScreen == SCREEN_APPLICATIONS)
+    {
+        DrawAppsArrow(previousAppsCursor, 0);
+        DrawAppsArrow(appsCursor, 1);
+        previousAppsCursor = appsCursor;
+        appsCursorMoved = 0;
     }
 }
 
@@ -395,6 +454,31 @@ int main(void)
             }
           }
         }
+
+
+
+        else if (currentScreen == SCREEN_APPLICATIONS)
+        {
+            if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_3) != currentCLKState)
+            {
+                if (appsCursor < APP_COUNT - 1)
+                {
+                    appsCursor++;
+                    appsCursorMoved = 1;
+                }
+            }
+            else
+            {
+                if (appsCursor > 0)
+                {
+                    appsCursor--;
+                    appsCursorMoved = 1;
+                }
+            }
+        }
+
+
+
       }
 
       lastCLKState = currentCLKState;
@@ -411,6 +495,11 @@ int main(void)
         {
           currentScreen = menuItems[menuCursor].targetScreen;
           needsFullRedraw = 1;
+        }
+
+        else if (currentScreen == SCREEN_APPLICATIONS)
+        {
+            SendUartCommand(appCommands[appsCursor]);
         }
 
         while (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_5) == GPIO_PIN_RESET)
