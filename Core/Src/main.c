@@ -352,7 +352,7 @@ static void ParseUartLine(const char *line)
     }
 }
 
-
+//Displays real time CPU and RAM data
 static void UpdateComputerValues(void)
 {
     char buf[20];
