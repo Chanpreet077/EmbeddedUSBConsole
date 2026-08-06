@@ -327,7 +327,7 @@ static void RenderCurrentScreen(void)
         computerNeedsUpdate = 0;
     }
 
-
+//add one of these for each menu screen
     else if (appsCursorMoved && currentScreen == SCREEN_APPLICATIONS)
     {
         DrawAppsArrow(previousAppsCursor, 0);
