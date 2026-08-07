@@ -69,6 +69,6 @@ A handheld STM32-based device with a color display, rotary encoder navigation, a
 **PC daemon**:
 ```
 pip install pyserial psutil
-python pc_console_daemon.py
+python tools/pc_console_daemon.py
 ```
 Set `COM_PORT` and `PROJECT_FOLDER` at the top of the script to match your machine before running.
