@@ -22,6 +22,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "ili9341.h"
+#include "bmp180.h"
 #include "sunset_img.h"
 #include <string.h>
 #include <stdlib.h>
@@ -131,6 +132,10 @@ uint8_t appsCursor = 0;
 uint8_t previousAppsCursor = 0;
 volatile uint8_t appsCursorMoved = 0;
 
+static float envTemperature = 0.0f;
+static float envPressure = 0.0f;
+static uint8_t envSensorOk = 0;
+
 
 
 /* USER CODE END PV */
@@ -153,6 +158,7 @@ static void ParseUartLine(const char *line);
 
 static void DrawAppsArrow(uint8_t index, uint8_t show);
 static void RenderApplicationsScreen(void);
+static void RenderEnvironmentScreen(void);
 static void SendUartCommand(const char *cmd);
 
 /* USER CODE END PFP */
@@ -304,8 +310,8 @@ static void RenderCurrentScreen(void)
             RenderApplicationsScreen();
             break;
         case SCREEN_ENVIRONMENT:
-        	RenderPlaceholderScreen("ENVIRONMENT");
-        	break;
+            RenderEnvironmentScreen();
+            break;
         case SCREEN_COMPUTER:
         	RenderComputerScreen();
         	break;
@@ -375,6 +381,98 @@ static void RenderComputerScreen(void)
     ILI9341_DrawString(10, 290, "PRESS USER BTN TO GO BACK", ILI9341_GRAY, ILI9341_BLACK, 1);
 }
 
+
+
+static void RenderEnvironmentScreen(void)
+{
+    ILI9341_FillScreen(ILI9341_BLACK);
+
+    ILI9341_DrawString(
+        20, 20,
+        "ENVIRONMENT",
+        ILI9341_YELLOW,
+        ILI9341_BLACK,
+        2
+    );
+
+    char buf[24];
+
+    /* Initialization already failed at startup */
+    if (!envSensorOk)
+    {
+        ILI9341_DrawString(
+            20, 60,
+            "BMP180 NO ACK",
+            ILI9341_RED,
+            ILI9341_BLACK,
+            2
+        );
+
+        ILI9341_DrawString(
+            10, 290,
+            "PRESS USER BTN TO GO BACK",
+            ILI9341_GRAY,
+            ILI9341_BLACK,
+            1
+        );
+
+        return;
+    }
+
+    HAL_StatusTypeDef status =
+        BMP180_ReadData(&envTemperature, &envPressure);
+
+    if (status == HAL_OK)
+    {
+        snprintf(
+            buf,
+            sizeof(buf),
+            "TEMP: %.1f C",
+            envTemperature
+        );
+
+        ILI9341_DrawString(
+            20, 60,
+            buf,
+            ILI9341_WHITE,
+            ILI9341_BLACK,
+            2
+        );
+
+        snprintf(
+            buf,
+            sizeof(buf),
+            "PRES: %.0f Pa",
+            envPressure
+        );
+
+        ILI9341_DrawString(
+            20, 90,
+            buf,
+            ILI9341_WHITE,
+            ILI9341_BLACK,
+            2
+        );
+    }
+    else
+    {
+        ILI9341_DrawString(
+            20, 60,
+            "BMP180 READ ERROR",
+            ILI9341_RED,
+            ILI9341_BLACK,
+            2
+        );
+    }
+
+    ILI9341_DrawString(
+        10, 290,
+        "PRESS USER BTN TO GO BACK",
+        ILI9341_GRAY,
+        ILI9341_BLACK,
+        1
+    );
+}
 /* USER CODE END 0 */
 
 /**
@@ -415,9 +513,15 @@ int main(void)
 
   HAL_UART_Receive_IT(&huart2, &uartRxByte, 1);
 
+
+
   tft_debug_step = 1;
   ILI9341_Init();
+  MX_I2C1_Init();
   tft_debug_step = 2;
+
+  envSensorOk = (BMP180_Init() == HAL_OK);
+
 
   /* USER CODE END 2 */
 

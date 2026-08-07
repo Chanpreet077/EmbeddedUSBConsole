@@ -1,0 +1,5 @@
+../Core/Src/bmp180.c:34:26:ReadCalibration	2
+../Core/Src/bmp180.c:59:19:BMP180_Init	1
+../Core/Src/bmp180.c:64:26:ReadRawTemp	3
+../Core/Src/bmp180.c:85:26:ReadRawPressure	3
+../Core/Src/bmp180.c:110:19:BMP180_ReadData	5

@@ -37,7 +37,7 @@ static HAL_StatusTypeDef ReadCalibration(void)
 
     HAL_StatusTypeDef status = HAL_I2C_Mem_Read(
         &hi2c1, BMP180_I2C_ADDR, BMP180_REG_CALIB_START,
-        I2C_MEMADD_SIZE_8BIT, buf, sizeof(buf), HAL_MAX_DELAY);
+        I2C_MEMADD_SIZE_8BIT, buf, sizeof(buf), 100);
 
     if (status != HAL_OK) return status;
 
@@ -68,14 +68,14 @@ static HAL_StatusTypeDef ReadRawTemp(int32_t *rawOut)
 
     HAL_StatusTypeDef status = HAL_I2C_Mem_Write(
         &hi2c1, BMP180_I2C_ADDR, BMP180_REG_CONTROL,
-        I2C_MEMADD_SIZE_8BIT, &cmd, 1, HAL_MAX_DELAY);
+        I2C_MEMADD_SIZE_8BIT, &cmd, 1, 100);
     if (status != HAL_OK) return status;
 
     HAL_Delay(5); /* datasheet: temperature conversion takes ~4.5ms */
 
     status = HAL_I2C_Mem_Read(
         &hi2c1, BMP180_I2C_ADDR, BMP180_REG_RESULT,
-        I2C_MEMADD_SIZE_8BIT, data, 2, HAL_MAX_DELAY);
+        I2C_MEMADD_SIZE_8BIT, data, 2, 100);
     if (status != HAL_OK) return status;
 
     *rawOut = (int32_t)((data[0] << 8) | data[1]);
@@ -89,14 +89,14 @@ static HAL_StatusTypeDef ReadRawPressure(int32_t *rawOut)
 
     HAL_StatusTypeDef status = HAL_I2C_Mem_Write(
         &hi2c1, BMP180_I2C_ADDR, BMP180_REG_CONTROL,
-        I2C_MEMADD_SIZE_8BIT, &cmd, 1, HAL_MAX_DELAY);
+        I2C_MEMADD_SIZE_8BIT, &cmd, 1, 100);
     if (status != HAL_OK) return status;
 
     HAL_Delay(8); /* conversion time grows with oversampling; safe at OSS=0 */
 
     status = HAL_I2C_Mem_Read(
         &hi2c1, BMP180_I2C_ADDR, BMP180_REG_RESULT,
-        I2C_MEMADD_SIZE_8BIT, data, 3, HAL_MAX_DELAY);
+        I2C_MEMADD_SIZE_8BIT, data, 3, 100);
     if (status != HAL_OK) return status;
 
     *rawOut = (int32_t)(((data[0] << 16) | (data[1] << 8) | data[2]) >> (8 - BMP180_OSS));
