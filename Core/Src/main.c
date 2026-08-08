@@ -517,7 +517,7 @@ int main(void)
 
   tft_debug_step = 1;
   ILI9341_Init();
-  MX_I2C1_Init();
+  //MX_I2C1_Init();
   tft_debug_step = 2;
 
   envSensorOk = (BMP180_Init() == HAL_OK);

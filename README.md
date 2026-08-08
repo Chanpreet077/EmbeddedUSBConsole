@@ -20,7 +20,7 @@ A handheld STM32-based device with a color display, rotary encoder navigation, a
 
 **Navigation**
 - Rotary-encoder-driven menu system with a cursor arrow, backed by a screen state machine (`AppScreen_t` enum + dispatch table)
-- Generalized dirty-flag redraw system: a small queue of pending redraw callbacks (`MarkDirty()` / `ProcessDirtyQueue()`) replaces per-feature ad hoc flags, avoiding full-screen repaints (and the flicker that comes with them) on every input event
+-Implemented event-driven partial redraw using dirty flags so cursor movements and live PC statistics update only affected screen regions instead of repainting the full display.
 - USER button interrupt provides universal "back to menu" from any screen
 
 **PC Connectivity (UART)**
@@ -36,7 +36,7 @@ A handheld STM32-based device with a color display, rotary encoder navigation, a
 
 - **Why a callback queue instead of a framebuffer:** a full 240x320 RGB565 framebuffer would need 150KB — more RAM than the STM32F446RE has in total (128KB SRAM). Partial/dirty-region redraws were used instead of a full buffer for this reason.
 - **Why interrupts for UART/USER button but polling for the encoder:** UART bytes and button presses can arrive at unpredictable times relative to the main loop, making interrupts the correct fit; the encoder is polled every loop pass instead, since quadrature decoding needs to sample both signal lines together at each step.
-- **Why sensor init happens on screen entry, not at boot:** an early version initialized the I2C sensor during startup, before the display. A stuck I2C bus (missing pull-ups) froze the entire device before it could even show a UI. Moving sensor communication to only happen when the Environment screen is actually opened means a sensor fault can never block the rest of the device from working.
+
 
 ## Notable Bugs Found & Fixed
 
