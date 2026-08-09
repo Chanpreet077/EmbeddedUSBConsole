@@ -2,6 +2,8 @@
 
 A handheld STM32-based device with a color display, rotary encoder navigation, and a Windows companion daemon — built to explore firmware fundamentals (SPI, I2C, UART, interrupts, state machines) end to end, from bare peripheral registers up through a working multi-screen UI and a bidirectional PC integration.
 
+![Device running the main menu](docs/device-photo.jpg)
+
 ## Hardware
 
 - STM32 Nucleo-F446RE
@@ -10,6 +12,8 @@ A handheld STM32-based device with a color display, rotary encoder navigation, a
 - BMP180 I2C temperature/pressure sensor
 - Onboard USER button (EXTI interrupt) for back-navigation
 - USB (via ST-LINK virtual COM port) for PC communication
+
+![STM32F446RE pinout](docs/pinout.png)
 
 ## Features
 
